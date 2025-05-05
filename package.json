@@ -1,0 +1,20 @@
+{
+  "name": "curso-fullstack",
+  "version": "1.0.0",
+  "description": "Projeto Node.js + MySQL",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "express",
+    "express-handlebars",
+    "bootstrap",
+    "mysql"
+  ],
+  "author": "Ygor Nacif",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
