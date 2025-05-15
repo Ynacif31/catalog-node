@@ -8,6 +8,7 @@ const app = express();
 
 // adcionar bootstrap
 app.use('/bootstrap', express.static('/node_modules/bootstrap/dist'));
+app.use('/css', express.static('./css'));
 
 // Configuração do banco de dados
 const db = mysql.createConnection({
