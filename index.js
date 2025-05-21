@@ -2,19 +2,26 @@
 const express = require("express");
 const mysql = require("mysql2");
 const { engine } = require("express-handlebars");
+const fileUpload = require("express-fileupload");
 
 // Inicializando o express
 const app = express();
+
+// Configuração do upload de arquivos
+app.use(fileUpload());
 
 // adcionar bootstrap
 app.use('/bootstrap', express.static('/node_modules/bootstrap/dist'));
 app.use('/css', express.static('./css'));
 
+// adcionar imagens
+app.use('/imagens', express.static('./imagens'));
+
 // Configuração do banco de dados
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
-  password: "",
+  password: "Nacif@3019",
   database: "curso-fullstack",
 });
 
@@ -22,6 +29,11 @@ const db = mysql.createConnection({
 app.engine("handlebars", engine());
 app.set("view engine", "handlebars");
 app.set("views", "./views");
+
+// Manipulação de dados via rotas
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
 
 // Conectando ao banco de dados
 db.connect((err) => {
@@ -33,8 +45,47 @@ db.connect((err) => {
 });
 
 // Criando uma rota
-app.get("/", (req, res) => {
-  res.render('formulario');
+app.get("/", function(req, res){
+  
+  let sql = 'SELECT * FROM produtos';
+  db.query(sql, function(err, result){
+    res.render('formulario', {produtos: result});
+  });
+});
+
+// Rota para cadastrar
+app.post("/cadastrar", (req, res) => {
+  console.log('Dados recebidos:', req.body);
+  console.log('Arquivo recebido:', req.files);
+
+  const { nome, valor } = req.body;
+  const imagem = req.files.imagem.name;
+
+  console.log('Dados processados:', { nome, valor, imagem });
+
+  const sql = 'INSERT INTO produtos (nome, valor, imagem) VALUES (?, ?, ?)';
+  
+  console.log('SQL a ser executado:', sql);
+  console.log('Parâmetros:', [nome, valor, imagem]);
+  
+  db.query(sql, [nome, valor, imagem], (err, result) => {
+    if (err) {
+      console.error('Erro ao cadastrar produto:', err);
+      return res.status(500).json({ error: 'Erro ao cadastrar produto', details: err.message });
+    }
+
+    console.log('Produto cadastrado com sucesso:', result);
+
+    req.files.imagem.mv(`./imagens/${imagem}`, (err) => {
+      if (err) {
+        console.error('Erro ao salvar imagem:', err);
+        return res.status(500).json({ error: 'Erro ao salvar imagem', details: err.message });
+      }
+      
+      console.log('Imagem salva com sucesso');
+      res.redirect('/');
+    });
+  });
 });
 
 // Iniciando o servidor
